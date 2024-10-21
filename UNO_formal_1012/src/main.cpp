@@ -25,6 +25,7 @@ const int Y_STEP_PIN = 3;
 // 其他引脚
 const int SERVO_PIN = 4;     // 对应UNO板子上面的Z轴的STEP引脚
 const int RGB_CTRL_PIN = 11; // RGB彩灯的PWM引脚
+const int CIFA_PIN = 10;     // 电磁阀对应的引脚，控制气泵的直接断开
 const int QIBENG_PIN = 7;    // 气泵的控制引脚，对应Z的DIR
 
 // 步进电机控制速度
@@ -59,6 +60,7 @@ void setup()
   pinMode(Y_STEP_PIN, OUTPUT);
   pinMode(ENABLE_PIN, OUTPUT);
   pinMode(RGB_CTRL_PIN, OUTPUT);
+  pinMode(CIFA_PIN, OUTPUT);
   pinMode(QIBENG_PIN, OUTPUT);
   /* -------------------------------- 开启RGB灯的部分 ------------------------------- */
   int pwmValue = (1 / 5.0) * 255;      // 计算出对应的占空比
@@ -67,7 +69,7 @@ void setup()
   // 启用步进电机驱动器（负电平有效）
   digitalWrite(ENABLE_PIN, LOW);
   // 初始化继电器（关闭气泵）digitalWrite(QIBENG_PIN, HIGH);
-  turn_off_qb();
+  // turn_off_qb();
   // 初始化舵机
   servo.attach(SERVO_PIN, 500, 2500);
   servo.write(180);
@@ -83,7 +85,7 @@ int servo_delay_time = 800;
 int dd = 500;
 void loop()
 {
-  // 检查是否有串口数据可读取
+  /* --------------------------------- 串口调试系统 --------------------------------- */
   if (Serial.available() > 0)
   {
     // 读取一整行输入的字符串
@@ -91,6 +93,10 @@ void loop()
     input.trim();        // 去掉输入中的空白符
     parseCommand(input); // 解析输入指令
   }
+
+   digitalWrite(QIBENG_PIN, 0); //1为启动，0为关闭
+  digitalWrite(CIFA_PIN, 0); //0为没有上电，1为上电
+  delay(20000);
 
   // move_X_(30);
   // delay(dd);
