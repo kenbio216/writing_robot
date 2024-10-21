@@ -1,0 +1,27 @@
+import sensor, image, time, lcd
+
+#初始化LCD屏幕
+lcd.init()                          # Init lcd display
+lcd.clear(lcd.RED)                  # Clear lcd screen.
+
+sensor.reset()
+sensor.set_pixformat(sensor.RGB565)  # 设置像素格式
+sensor.set_framesize(sensor.QVGA)    # 设置分辨率
+sensor.skip_frames(time = 2000)      # 等待摄像头稳定
+sensor.set_auto_gain(False)          # 关闭自动增益
+sensor.set_auto_whitebal(False)      # 关闭自动白平衡
+clock = time.clock()                 # 创建时钟对象
+
+while(True):
+    clock.tick()
+    img = sensor.snapshot()  # 捕捉图像
+    # 检测圆形
+    circles = img.find_circles(threshold=2000, x_margin=10, y_margin=10, r_margin=10,
+                               r_min=10, r_max=100, r_step=2)
+    # 绘制检测到的圆
+    for c in circles:
+        img.draw_circle(c.x(), c.y(), c.r(), color=(255, 0, 0))
+
+    # 打印检测结果
+        lcd.display(img)                # Display image on lcd.
+    print("FPS %f" % clock.fps())
