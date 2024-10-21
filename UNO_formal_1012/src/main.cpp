@@ -25,7 +25,7 @@ const int Y_STEP_PIN = 3;
 // 其他引脚
 const int SERVO_PIN = 4;     // 对应UNO板子上面的Z轴的STEP引脚
 const int RGB_CTRL_PIN = 11; // RGB彩灯的PWM引脚
-const int QIBENG_PIN = 7;    // 气泵的控制引脚
+const int QIBENG_PIN = 7;    // 气泵的控制引脚，对应Z的DIR
 
 // 步进电机控制速度
 const int internal_time = 500;
@@ -42,11 +42,16 @@ void servo_set(void);
 void servo_up(void);
 void servo_down(void);
 void xizi(void);
+void luozi(void);
+void parseCommand(String input);
 /* -------------------------------------------------------------------------- */
 /*                                    setup                                   */
 /* -------------------------------------------------------------------------- */
+
 void setup()
 {
+  // 初始化串口通讯
+  Serial.begin(115200);
   // 设置引脚模式
   pinMode(X_DIR_PIN, OUTPUT);
   pinMode(Y_DIR_PIN, OUTPUT);
@@ -68,21 +73,32 @@ void setup()
   servo.write(180);
 }
 
+// 全局变量用于记录X和Y轴的移动总量
+long totalX = 0;
+long totalY = 0;
 /* -------------------------------------------------------------------------- */
 /*                                    loop                                    */
 /* -------------------------------------------------------------------------- */
 int servo_delay_time = 800;
+int dd = 500;
 void loop()
 {
-  // 移动
-  // xizi
-  xizi();
-  // 移动
-  // luozi
+  // 检查是否有串口数据可读取
+  if (Serial.available() > 0)
+  {
+    // 读取一整行输入的字符串
+    String input = Serial.readStringUntil('\n');
+    input.trim();        // 去掉输入中的空白符
+    parseCommand(input); // 解析输入指令
+  }
 
-  // move_X_(50);
+  // move_X_(30);
+  // delay(dd);
+  // move_X_(-30);
+  // delay(dd);
+  // delay(20000);
+
   // delay(1000);
-  // move_Y_(50);
   // 将舵机移动到0度
   // servo.write(180);
   // delay(servo_delay_time);
@@ -122,6 +138,8 @@ void move_X_(int x_mm)
     digitalWrite(Y_STEP_PIN, LOW);
     delayMicroseconds(internal_time);
   }
+  Serial.print("Moving X by: ");
+  Serial.println(x_mm);
 }
 
 // 控制吸头在Y轴方向移动
@@ -148,6 +166,8 @@ void move_Y_(int y_mm)
     digitalWrite(Y_STEP_PIN, LOW);
     delayMicroseconds(internal_time);
   }
+  Serial.print("Moving Y by: ");
+  Serial.println(y_mm);
 }
 
 void turn_on_qb()
@@ -190,4 +210,40 @@ void luozi()
   turn_off_qb();
   delay(2000);
   servo_up();
+}
+
+// 解析和执行串口指令
+void parseCommand(String input)
+{
+  if (input.startsWith("MOVEX"))
+  {
+    // 提取数字并调用move_X_函数
+    long value = input.substring(5).toInt();
+    totalX += value; // 累加X轴的移动量
+    move_X_(value);  // 调用原有的move_X_函数
+  }
+  else if (input.startsWith("MOVEY"))
+  {
+    // 提取数字并调用move_Y_函数
+    long value = input.substring(5).toInt();
+    totalY += value; // 累加Y轴的移动量
+    move_Y_(value);  // 调用原有的move_Y_函数
+  }
+  else if (input == "RETURNX")
+  {
+    // 返回X轴的总移动值
+    Serial.print("X total move: ");
+    Serial.println(totalX);
+  }
+  else if (input == "RETURNY")
+  {
+    // 返回Y轴的总移动值
+    Serial.print("Y total move: ");
+    Serial.println(totalY);
+  }
+  else
+  {
+    // 如果是无效指令，提示用户
+    Serial.println("Invalid command.");
+  }
 }
