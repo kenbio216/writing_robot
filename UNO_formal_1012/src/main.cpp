@@ -15,23 +15,29 @@
 /* -------------------------------------------------------------------------- */
 
 /* ---------------------------------- 引脚定义 ---------------------------------- */
+// 电机引脚
+const int ENABLE_PIN = 8;
 const int X_DIR_PIN = 5;
 const int Y_DIR_PIN = 6;
 const int X_STEP_PIN = 2;
 const int Y_STEP_PIN = 3;
+
+// 其他引脚
 const int SERVO_PIN = 4;     // 对应UNO板子上面的Z轴的STEP引脚
 const int RGB_CTRL_PIN = 11; // RGB彩灯的PWM引脚
-const int ENABLE_PIN = 8;
+const int QIBENG_PIN = 7;    // 气泵的控制引脚
 
 // 步进电机控制速度
 const int internal_time = 500;
-const int servo_speed_time = 2000;
+// const int servo_speed_time = 2000;
 // 声明servo类
 Servo servo;
 
 /* ---------------------------------- 函数声明 ---------------------------------- */
 void move_X_(int x_mm);
 void move_Y_(int y_mm);
+void turn_on_qb(void);
+void turn_off_qb(void);
 
 /* -------------------------------------------------------------------------- */
 /*                                    setup                                   */
@@ -45,31 +51,37 @@ void setup()
   pinMode(Y_STEP_PIN, OUTPUT);
   pinMode(ENABLE_PIN, OUTPUT);
   pinMode(RGB_CTRL_PIN, OUTPUT);
+  pinMode(QIBENG_PIN, OUTPUT);
   /* -------------------------------- 开启RGB灯的部分 ------------------------------- */
-  // int pwmValue = (2/ 5.0) * 255;      // 计算出对应的占空比
-  // analogWrite(RGB_CTRL_PIN, pwmValue); // 点亮RGB灯
+  int pwmValue = (1 / 5.0) * 255;      // 计算出对应的占空比
+  analogWrite(RGB_CTRL_PIN, pwmValue); // 点亮RGB灯
+
   // 启用步进电机驱动器（负电平有效）
   digitalWrite(ENABLE_PIN, LOW);
-
+  // 初始化继电器（关闭气泵）digitalWrite(QIBENG_PIN, HIGH);
+  turn_off_qb();
   // 初始化舵机
   servo.attach(SERVO_PIN, 500, 2500);
+  servo.write(180);
 }
 
 /* -------------------------------------------------------------------------- */
 /*                                    loop                                    */
 /* -------------------------------------------------------------------------- */
+int servo_delay_time = 800;
 void loop()
 {
-  move_X_(50);
-  delay(1000);
-  move_Y_(50);
-  delay(20000); // 等待
-
+  // move_X_(50);
+  // delay(1000);
+  // move_Y_(50);
   // 将舵机移动到0度
-  // servo.write(0);
-  // delay(servo_speed_time); // 将舵机移动到90度 servo.write(90); delay(servo_speed_time);
+  // servo.write(180);
+  // delay(servo_delay_time);
   // servo.write(90);
-  // delay(servo_speed_time);
+  // delay(servo_delay_time);
+  // servo.write(180);
+  // delay(servo_delay_time);
+  // delay(20000); // 等待
 
   // 将舵机移动到180度 servo.write(180); delay(servo_speed_time)
 }
@@ -128,3 +140,15 @@ void move_Y_(int y_mm)
     delayMicroseconds(internal_time);
   }
 }
+
+void turn_on_qb()
+{
+  digitalWrite(QIBENG_PIN, LOW); // 打开气泵
+}
+
+void turn_off_qb()
+{
+  digitalWrite(QIBENG_PIN, HIGH); // 关闭气泵
+}
+
+void head_
