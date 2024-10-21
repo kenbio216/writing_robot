@@ -38,7 +38,10 @@ void move_X_(int x_mm);
 void move_Y_(int y_mm);
 void turn_on_qb(void);
 void turn_off_qb(void);
-
+void servo_set(void);
+void servo_up(void);
+void servo_down(void);
+void xizi(void);
 /* -------------------------------------------------------------------------- */
 /*                                    setup                                   */
 /* -------------------------------------------------------------------------- */
@@ -71,6 +74,12 @@ void setup()
 int servo_delay_time = 800;
 void loop()
 {
+  // 移动
+  // xizi
+  xizi();
+  // 移动
+  // luozi
+
   // move_X_(50);
   // delay(1000);
   // move_Y_(50);
@@ -151,4 +160,34 @@ void turn_off_qb()
   digitalWrite(QIBENG_PIN, HIGH); // 关闭气泵
 }
 
-void head_
+void servo_set()
+{
+  servo.write(180);
+}
+
+void servo_up()
+{
+  servo.write(180);
+}
+void servo_down()
+{
+  servo.write(90);
+}
+
+void xizi()
+{
+  servo_down();
+  turn_on_qb();
+  delay(1500);
+  servo_up();
+  turn_off_qb();
+  delay(1500);
+}
+
+void luozi()
+{
+  servo_down();
+  turn_off_qb();
+  delay(2000);
+  servo_up();
+}
